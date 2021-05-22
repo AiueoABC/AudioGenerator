@@ -1,6 +1,7 @@
 import numpy as np  # install : conda install numpy
 import pyaudio      # install : conda install pyaudio
 import noteGenerator as ng
+import PySimpleGUI as sg
 
 SAMPLE_RATE = 44100
 
@@ -22,16 +23,41 @@ stream = p.open(format=pyaudio.paFloat32,
                 frames_per_buffer=1024,
                 output=True)
 # Play note
-# play(stream, 261.626, 0.3)  # note#60 C4
-# play(stream, 329.628, 0.3)  # note#64 E4
-# play(stream, 391.995, 0.3)  # note#67 G4
-# play(stream, 523.251, 0.6)  # note#72 C5
-play(stream, ng.note2Hz('C4'), 0.3)  # note#60 C4
-play(stream, ng.note2Hz('E4'), 0.3)  # note#64 E4
-play(stream, ng.note2Hz('G4'), 0.3)  # note#67 G4
-play(stream, ng.note2Hz('C5'), 0.6)  # note#72 C5
-
+# Key board generation
+layout = [
+    [sg.Button('', size=(2, 11)),
+     sg.Button('C#', size=(2, 11), button_color='black'),
+     sg.Button('', size=(1, 11)),
+     sg.Button('D#', size=(2, 11), button_color='black'),
+     sg.Button('', size=(2, 11)),
+     sg.Button('F#', size=(2, 11), button_color='black'),
+     sg.Button('', size=(1, 11)),
+     sg.Button('G#', size=(2, 11), button_color='black'),
+     sg.Button('', size=(1, 11)),
+     sg.Button('A#', size=(2, 11), button_color='black'),
+     sg.Button('', size=(2, 11))],
+    [sg.Button('C', size=(4, 13), button_color='Gray'),
+     sg.Button('D', size=(4, 13), button_color='Gray'),
+     sg.Button('E', size=(4, 13), button_color='Gray'),
+     sg.Button('F', size=(4, 13), button_color='Gray'),
+     sg.Button('G', size=(4, 13), button_color='Gray'),
+     sg.Button('A', size=(4, 13), button_color='Gray'),
+     sg.Button('B', size=(4, 13), button_color='Gray')]
+]
+window = sg.Window('Play with DroidCam', layout, location=(600, 200), finalize=True, element_justification='center')
+noteLv = 4
+wave = 0
+while True:
+    event, values = window.read(timeout=1)
+    if event in (None, 'Exit'):
+        break
+    elif event != '__TIMEOUT__':
+        wave = ng.note2Hz(f'{event}{noteLv}')
+    print(wave)
+    play(stream, wave, 0.1)
 # close stream
 stream.close()
 # close PyAudio
 p.terminate()
+# close window
+window.close()
