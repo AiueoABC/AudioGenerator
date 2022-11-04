@@ -1,4 +1,50 @@
-def note2Hz(note:str):
+import numpy as np
+import pyaudio
+
+
+class NoteGenerator:
+    def __init__(self, sample_rate: int = 44100):
+        self.stream = None
+        self.p = None
+        # set sample rate
+        self.sample_rate = sample_rate
+
+    def open(self):
+        # PyAudio
+        self.p = pyaudio.PyAudio() if self.p is None else self.p
+        # open stream
+        self.stream = self.p.open(
+            format=pyaudio.paFloat32,
+            channels=1,
+            rate=self.sample_rate,
+            frames_per_buffer=1024,
+            output=True
+        ) if self.stream is None else self.stream
+
+    # sin Wave Generation and Play
+    def play_hz(self, freq: float, duration: float):
+        if self.stream is None:
+            return False
+        else:
+            # Generate sin Wave
+            samples = np.sin(np.arange(int(duration * self.sample_rate)) * freq * np.pi * 2 / self.sample_rate)
+            # Play that
+            self.stream.write(samples.astype(np.float32).tostring())
+            return True
+
+    def play_tone(self, note, duration):
+        self.play_hz(_note2hz(note), duration)
+
+    def close(self):
+        # close stream
+        self.stream.close()
+        # close PyAudio
+        self.p.terminate()
+        self.stream = None
+        self.p = None
+
+
+def _note2hz(note: str):
     # find key number, #49 is A4 and 440 Hz
     # And generate Hz
     key = 0
